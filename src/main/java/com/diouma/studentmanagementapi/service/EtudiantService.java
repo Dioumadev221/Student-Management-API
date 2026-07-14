@@ -14,18 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Couche metier de gestion des etudiants.
- *
- * <p>Elle porte l'ensemble des regles de gestion :</p>
- * <ul>
- *     <li>validation manuelle des champs obligatoires (les annotations
- *         {@code @Valid}/{@code @NotBlank} ne sont pas utilisees, conformement au sujet) ;</li>
- *     <li>controle d'unicite du matricule et de l'email ;</li>
- *     <li>traduction des cas d'erreur en exceptions expressives, converties en
- *         codes HTTP par le gestionnaire global.</li>
- * </ul>
- */
+
 @Service
 @RequiredArgsConstructor
 public class EtudiantService {
@@ -35,8 +24,7 @@ public class EtudiantService {
 
     /**
      * Ajoute un nouvel etudiant.
-     *
-     * @throws BadRequestException       si un champ obligatoire est manquant
+     * @throws BadRequestException si un champ obligatoire est manquant
      * @throws DuplicateResourceException si le matricule ou l'email existe deja
      */
     @Transactional
@@ -59,13 +47,8 @@ public class EtudiantService {
         return mapper.toResponse(enregistre);
     }
 
-    /**
-     * Modifie un etudiant existant.
-     *
-     * @throws ResourceNotFoundException  si aucun etudiant ne correspond a l'id
-     * @throws BadRequestException        si un champ obligatoire est manquant
-     * @throws DuplicateResourceException si le nouveau matricule/email appartient a un autre etudiant
-     */
+
+
     @Transactional
     public EtudiantResponse modifier(Long id, EtudiantRequest request) {
         Etudiant existant = repository.findById(id)
@@ -76,7 +59,7 @@ public class EtudiantService {
         String matricule = request.matricule().trim();
         String email = request.email().trim();
 
-        // On ne signale un conflit que si la valeur a change ET qu'elle est deja prise par un autre.
+
         if (!matricule.equals(existant.getMatricule()) && repository.existsByMatricule(matricule)) {
             throw new DuplicateResourceException(
                     "Le matricule '" + matricule + "' existe deja.");
@@ -90,11 +73,7 @@ public class EtudiantService {
         return mapper.toResponse(repository.save(existant));
     }
 
-    /**
-     * Recherche un etudiant par son identifiant technique.
-     *
-     * @throws ResourceNotFoundException si aucun etudiant ne correspond a l'id
-     */
+
     @Transactional(readOnly = true)
     public EtudiantResponse rechercher(Long id) {
         return repository.findById(id)
@@ -102,11 +81,7 @@ public class EtudiantService {
                 .orElseThrow(() -> ResourceNotFoundException.parId(id));
     }
 
-    /**
-     * Bonus : recherche un etudiant par son matricule.
-     *
-     * @throws ResourceNotFoundException si aucun etudiant ne correspond au matricule
-     */
+
     @Transactional(readOnly = true)
     public EtudiantResponse rechercherParMatricule(String matricule) {
         return repository.findByMatricule(matricule)
@@ -115,7 +90,6 @@ public class EtudiantService {
                         "Aucun etudiant trouve pour le matricule '" + matricule + "'."));
     }
 
-    /** Liste tous les etudiants, tries par nom en ordre alphabetique (bonus). */
     @Transactional(readOnly = true)
     public List<EtudiantResponse> lister() {
         return repository.findAllByOrderByNomAsc()
@@ -124,11 +98,7 @@ public class EtudiantService {
                 .toList();
     }
 
-    /**
-     * Supprime un etudiant.
-     *
-     * @throws ResourceNotFoundException si aucun etudiant ne correspond a l'id
-     */
+
     @Transactional
     public void supprimer(Long id) {
         if (!repository.existsById(id)) {
@@ -137,9 +107,7 @@ public class EtudiantService {
         repository.deleteById(id);
     }
 
-    // ------------------------------------------------------------------
-    // Validation manuelle des champs obligatoires (aucune annotation @Valid)
-    // ------------------------------------------------------------------
+    // Validation des champs obligatoires
 
     private void validerChamps(EtudiantRequest r) {
         if (r == null) {
@@ -156,7 +124,6 @@ public class EtudiantService {
         exigerTexte(r.nationalite(), "La nationalite est obligatoire.");
     }
 
-    /** Verifie qu'une chaine est renseignee (non nulle et non composee uniquement d'espaces). */
     private void exigerTexte(String valeur, String messageErreur) {
         if (valeur == null || valeur.isBlank()) {
             throw new BadRequestException(messageErreur);

@@ -6,9 +6,6 @@ import java.time.LocalDate;
 
 /**
  * Donnees d'entree recues du client pour creer ou modifier un etudiant.
- *
- * <p>Volontairement decouple de l'entite JPA : le client ne fournit jamais l'id,
- * et l'API n'expose pas directement son modele de persistance.</p>
  */
 @Schema(description = "Donnees d'entree pour creer ou modifier un etudiant")
 public record EtudiantRequest(

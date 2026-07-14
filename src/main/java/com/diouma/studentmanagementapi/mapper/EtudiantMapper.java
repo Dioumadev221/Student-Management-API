@@ -52,7 +52,7 @@ public class EtudiantMapper {
         );
     }
 
-    /** Supprime les espaces superflus ; conserve {@code null} tel quel. */
+    //Supprime les espaces superflus.
     private String normaliser(String valeur) {
         return valeur == null ? null : valeur.trim();
     }

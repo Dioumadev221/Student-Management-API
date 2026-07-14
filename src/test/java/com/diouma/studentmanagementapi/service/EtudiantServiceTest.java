@@ -34,7 +34,6 @@ class EtudiantServiceTest {
     @Mock
     private EtudiantRepository repository;
 
-    // Mapper reel : logique de conversion simple, inutile de le mocker.
     private final EtudiantMapper mapper = new EtudiantMapper();
 
     private EtudiantService service;

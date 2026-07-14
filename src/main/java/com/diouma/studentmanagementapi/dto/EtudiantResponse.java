@@ -6,9 +6,6 @@ import java.time.LocalDate;
 
 /**
  * Representation d'un etudiant renvoyee au client.
- *
- * <p>L'age n'est pas inclus : conformement au cahier des charges, il est calcule
- * cote application cliente a partir de la date de naissance.</p>
  */
 @Schema(description = "Representation d'un etudiant renvoyee par l'API")
 public record EtudiantResponse(

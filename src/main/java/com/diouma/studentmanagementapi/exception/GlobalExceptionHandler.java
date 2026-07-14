@@ -10,11 +10,10 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 /**
  * Gestionnaire d'exceptions centralise pour l'ensemble de l'API.
- *
- * <p>Choix d'architecture : plutot que de melanger la logique de traduction des
+ * Plutot que de melanger la logique de traduction des
  * erreurs en codes HTTP dans chaque methode du controleur, on la centralise ici.
  * Les couches metier levent des exceptions expressives ; ce conseiller les
- * convertit en reponses HTTP normalisees au format {@link ErrorResponse}.</p>
+ * convertit en reponses HTTP normalisees au format {@link ErrorResponse}
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {

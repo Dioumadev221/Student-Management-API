@@ -4,9 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Corps de reponse standard en cas d'erreur.
- *
- * <p>Respecte le format impose par le cahier des charges :
- * {@code {"code": 400, "msg": "Le matricule est obligatoire."}}.</p>
  */
 @Schema(description = "Corps de reponse renvoye en cas d'erreur")
 public record ErrorResponse(

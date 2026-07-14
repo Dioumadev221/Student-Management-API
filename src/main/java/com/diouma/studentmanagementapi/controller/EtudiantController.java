@@ -26,21 +26,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-/**
- * Controleur REST exposant les operations CRUD sur les etudiants.
- *
- * <p>Le controleur reste volontairement mince : il ne fait que traduire les
- * requetes HTTP en appels de service et renvoyer le code HTTP adapte. Toutes les
- * regles metier (validations, controles d'unicite) sont portees par la couche
- * service, et la traduction des erreurs en reponses HTTP par le gestionnaire global.</p>
- */
 @RestController
 @RequestMapping("/etudiants")
 @RequiredArgsConstructor
-@Tag(name = "Etudiants", description = "Gestion des etudiants de l'ISEP-AT (operations CRUD)")
+@Tag(name = "Etudiants", description = "Gestion des etudiants de l'ISEP-AT operations CRUD")
 public class EtudiantController {
 
     private final EtudiantService service;
+
 
     @Operation(
             summary = "Ajouter un etudiant",
@@ -62,6 +55,8 @@ public class EtudiantController {
                 .toUri();
         return ResponseEntity.created(localisation).body(cree);
     }
+
+
 
     @Operation(
             summary = "Lister les etudiants",
@@ -85,8 +80,12 @@ public class EtudiantController {
         return service.rechercher(id);
     }
 
+
+
+
+
     @Operation(
-            summary = "Rechercher un etudiant par matricule (bonus)",
+            summary = "Rechercher un etudiant par matricule",
             description = "Renvoie l'etudiant correspondant au matricule fourni.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Etudiant trouve"),
@@ -97,6 +96,8 @@ public class EtudiantController {
     public EtudiantResponse rechercherParMatricule(@PathVariable String matricule) {
         return service.rechercherParMatricule(matricule);
     }
+
+
 
     @Operation(
             summary = "Modifier un etudiant",
@@ -115,6 +116,8 @@ public class EtudiantController {
     public EtudiantResponse modifier(@PathVariable Long id, @RequestBody EtudiantRequest request) {
         return service.modifier(id, request);
     }
+
+
 
     @Operation(
             summary = "Supprimer un etudiant",

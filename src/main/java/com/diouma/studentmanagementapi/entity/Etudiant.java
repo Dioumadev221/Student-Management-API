@@ -17,13 +17,7 @@ import java.time.LocalDate;
 
 /**
  * Entite JPA representant un etudiant de l'ISEP-AT.
- *
- * <p>Remarque : l'age n'est volontairement pas persiste. Conformement au cahier
- * des charges, il est calcule cote client a partir de {@link #dateNaissance}.</p>
- *
- * <p>Les contraintes d'unicite ({@code matricule}, {@code email}) sont declarees
- * au niveau du schema (garantie forte cote base) <em>et</em> verifiees en amont
- * dans la couche service pour renvoyer un message d'erreur explicite.</p>
+ * Remarque : l'age n'est volontairement pas persiste il est calcule cote client a partir de dateNaissance
  */
 @Entity
 @Table(
@@ -40,13 +34,11 @@ import java.time.LocalDate;
 @Builder
 public class Etudiant {
 
-    /** Cle primaire technique, generee par la base de donnees. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Identifiant metier de l'etudiant : obligatoire et unique. */
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String matricule;
 
     @Column(nullable = false, length = 100)
@@ -55,8 +47,7 @@ public class Etudiant {
     @Column(nullable = false, length = 100)
     private String nom;
 
-    /** Adresse e-mail : obligatoire et unique. */
-    @Column(nullable = false, unique = true, length = 150)
+    @Column(nullable = false, length = 150)
     private String email;
 
     @Column(name = "date_naissance", nullable = false)
