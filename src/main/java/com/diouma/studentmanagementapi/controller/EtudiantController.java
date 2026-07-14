@@ -29,21 +29,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/etudiants")
 @RequiredArgsConstructor
-@Tag(name = "Etudiants", description = "Gestion des etudiants de l'ISEP-AT operations CRUD")
+@Tag(name = "Etudiants", description = "Points d'acces REST pour gerer les etudiants : creation, consultation, mise a jour et suppression")
 public class EtudiantController {
 
     private final EtudiantService service;
 
 
     @Operation(
-            summary = "Ajouter un etudiant",
-            description = "Cree un nouvel etudiant apres verification des champs obligatoires "
-                    + "et de l'unicite du matricule et de l'email.")
+            summary = "Enregistrer un nouvel etudiant",
+            description = "Ajoute un etudiant dans la base, apres avoir verifie que tous les champs "
+                    + "obligatoires sont renseignes et que le matricule et l'email ne sont pas deja pris.")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Etudiant cree avec succes"),
-            @ApiResponse(responseCode = "400", description = "Un champ obligatoire est manquant",
+            @ApiResponse(responseCode = "201", description = "L'etudiant a bien ete enregistre"),
+            @ApiResponse(responseCode = "400", description = "Un des champs obligatoires n'a pas ete renseigne",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "409", description = "Matricule ou email deja existant",
+            @ApiResponse(responseCode = "409", description = "Le matricule ou l'email est deja utilise",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
@@ -59,20 +59,20 @@ public class EtudiantController {
 
 
     @Operation(
-            summary = "Lister les etudiants",
-            description = "Renvoie la liste de tous les etudiants, triee par nom en ordre alphabetique.")
-    @ApiResponse(responseCode = "200", description = "Liste renvoyee avec succes")
+            summary = "Afficher tous les etudiants",
+            description = "Retourne l'ensemble des etudiants enregistres, classes par nom dans l'ordre alphabetique.")
+    @ApiResponse(responseCode = "200", description = "La liste des etudiants a ete renvoyee")
     @GetMapping
     public List<EtudiantResponse> lister() {
         return service.lister();
     }
 
     @Operation(
-            summary = "Rechercher un etudiant par identifiant",
-            description = "Renvoie l'etudiant correspondant a l'identifiant technique fourni.")
+            summary = "Consulter un etudiant par son identifiant",
+            description = "Retourne les informations d'un etudiant a partir de son identifiant technique (id).")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Etudiant trouve"),
-            @ApiResponse(responseCode = "404", description = "Etudiant introuvable",
+            @ApiResponse(responseCode = "200", description = "L'etudiant demande a ete trouve"),
+            @ApiResponse(responseCode = "404", description = "Aucun etudiant ne correspond a cet identifiant",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{id}")
@@ -85,11 +85,12 @@ public class EtudiantController {
 
 
     @Operation(
-            summary = "Rechercher un etudiant par matricule",
-            description = "Renvoie l'etudiant correspondant au matricule fourni.")
+            summary = "Trouver un etudiant a partir de son matricule",
+            description = "Recherche un etudiant grace a son matricule unique (ex: ET001) "
+                    + "plutot que par son identifiant technique.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Etudiant trouve"),
-            @ApiResponse(responseCode = "404", description = "Etudiant introuvable",
+            @ApiResponse(responseCode = "200", description = "L'etudiant correspondant a ete trouve"),
+            @ApiResponse(responseCode = "404", description = "Aucun etudiant ne porte ce matricule",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/matricule/{matricule}")
@@ -100,16 +101,16 @@ public class EtudiantController {
 
 
     @Operation(
-            summary = "Modifier un etudiant",
-            description = "Met a jour un etudiant existant apres verification des champs "
-                    + "obligatoires et de l'unicite du matricule et de l'email.")
+            summary = "Mettre a jour un etudiant existant",
+            description = "Modifie les informations d'un etudiant deja enregistre, apres verification des "
+                    + "champs obligatoires et de l'unicite du matricule et de l'email.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Etudiant modifie avec succes"),
-            @ApiResponse(responseCode = "400", description = "Un champ obligatoire est manquant",
+            @ApiResponse(responseCode = "200", description = "Les informations de l'etudiant ont ete mises a jour"),
+            @ApiResponse(responseCode = "400", description = "Un des champs obligatoires n'a pas ete renseigne",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Etudiant introuvable",
+            @ApiResponse(responseCode = "404", description = "Aucun etudiant ne correspond a cet identifiant",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "409", description = "Matricule ou email deja existant",
+            @ApiResponse(responseCode = "409", description = "Le matricule ou l'email est deja utilise",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PutMapping("/{id}")
@@ -120,11 +121,11 @@ public class EtudiantController {
 
 
     @Operation(
-            summary = "Supprimer un etudiant",
-            description = "Supprime l'etudiant correspondant a l'identifiant fourni.")
+            summary = "Retirer un etudiant",
+            description = "Supprime definitivement un etudiant de la base a partir de son identifiant.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Etudiant supprime avec succes"),
-            @ApiResponse(responseCode = "404", description = "Etudiant introuvable",
+            @ApiResponse(responseCode = "204", description = "L'etudiant a bien ete supprime"),
+            @ApiResponse(responseCode = "404", description = "Aucun etudiant ne correspond a cet identifiant",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @DeleteMapping("/{id}")
