@@ -4,11 +4,14 @@ import com.diouma.studentmanagementapi.dto.EtudiantResponse;
 import com.diouma.studentmanagementapi.exception.BadRequestException;
 import com.diouma.studentmanagementapi.exception.DuplicateResourceException;
 import com.diouma.studentmanagementapi.exception.ResourceNotFoundException;
+import com.diouma.studentmanagementapi.security.JwtUtils;
 import com.diouma.studentmanagementapi.service.EtudiantService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * et le format du corps d'erreur, en mockant la couche service.
  */
 @WebMvcTest(EtudiantController.class)
+@AutoConfigureMockMvc(addFilters = false) // on teste le controleur isole, sans la chaine de securite
 class EtudiantControllerTest {
 
     @Autowired
@@ -36,6 +40,13 @@ class EtudiantControllerTest {
 
     @MockitoBean
     private EtudiantService service;
+
+    // Beans de securite requis par le filtre JWT charge dans la tranche @WebMvcTest.
+    @MockitoBean
+    private JwtUtils jwtUtils;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
 
     private static final String CORPS_VALIDE = """
             {

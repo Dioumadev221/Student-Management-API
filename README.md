@@ -2,7 +2,7 @@
 
 API REST de gestion des étudiants de l'ISEP-AT, développée avec **Spring Boot 4** et **Java 25**.
 Elle permet d'ajouter, modifier, supprimer, rechercher et lister des étudiants, avec une gestion
-rigoureuse des codes HTTP et une documentation OpenAPI/Swagger.
+rigoureuse des codes HTTP, une **sécurité par JWT** et une documentation OpenAPI/Swagger.
 
 ## Sommaire
 
@@ -13,6 +13,7 @@ rigoureuse des codes HTTP et une documentation OpenAPI/Swagger.
 - [Lancer l'application](#lancer-lapplication)
 - [Documentation Swagger](#documentation-swagger)
 - [Endpoints](#endpoints)
+- [Authentification (JWT)](#authentification-jwt)
 - [Gestion des erreurs](#gestion-des-erreurs)
 - [Tests](#tests)
 - [Décisions de conception](#décisions-de-conception)
@@ -25,6 +26,7 @@ rigoureuse des codes HTTP et une documentation OpenAPI/Swagger.
 | Framework          | Spring Boot 4.1                          |
 | Persistance        | Spring Data JPA / Hibernate              |
 | Base de données    | PostgreSQL (H2 en mémoire pour les tests)|
+| Sécurité           | Spring Security + JWT (JJWT), BCrypt      |
 | Documentation      | springdoc-openapi 3 (Swagger UI)         |
 | Boilerplate        | Lombok                                   |
 | Build              | Maven (wrapper `mvnw`)                   |
@@ -34,14 +36,15 @@ rigoureuse des codes HTTP et une documentation OpenAPI/Swagger.
 Architecture en couches, chaque couche ayant une responsabilité unique :
 
 ```
-controller/   → Exposition REST, traduction HTTP (couche mince)
-service/      → Logique métier : validations manuelles + contrôles d'unicité
-repository/   → Accès aux données (Spring Data JPA)
-entity/       → Modèle de persistance (Etudiant)
-dto/          → Contrats d'API (records) : Request / Response / ErrorResponse
+controller/   → Exposition REST (Etudiant + Auth), traduction HTTP (couche mince)
+service/      → Logique métier : validations manuelles, contrôles d'unicité, authentification
+repository/   → Accès aux données (Spring Data JPA) : Etudiant, User
+entity/       → Modèle de persistance : Etudiant, User, enum Role
+dto/          → Contrats d'API (records) : Etudiant/Error + Register/Login/AuthResponse
 mapper/       → Conversion entité ⇄ DTO
+security/     → JWT : JwtUtils, JwtFilter, SecurityConfig
 exception/    → Exceptions métier + @RestControllerAdvice global
-config/       → Configuration OpenAPI
+config/       → Configuration OpenAPI (avec schéma de sécurité JWT)
 ```
 
 Le flux d'une requête : `Controller → Service → Repository`, et en cas d'erreur, les exceptions
@@ -67,9 +70,9 @@ CREATE DATABASE isepat_cloud;  -- profil prod
 | `prod` | `isepat_cloud` | `validate` | **obligatoirement** via variables d'env   |
 | `test` | H2 en mémoire  | `create-drop` | —                                      |
 
-Le profil `dev` est actif par défaut. Les identifiants sont surchargeables par variables
-d'environnement (`DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) — aucun secret n'est écrit
-en dur pour la production.
+Le profil `dev` est actif par défaut. Les identifiants et la clé JWT sont surchargeables par
+variables d'environnement (`DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `JWT_SECRET`,
+`JWT_EXPIRATION`) — aucun secret n'est écrit en dur pour la production.
 
 ## Lancer l'application
 
@@ -117,6 +120,29 @@ Exemple de corps de requête (POST/PUT) :
 }
 ```
 
+## Authentification (JWT)
+
+L'API est protégée par **JSON Web Token**. Seuls `/api/auth/**` et la documentation Swagger sont
+publics ; tous les endpoints `/etudiants/**` exigent un token valide.
+
+| Méthode | URL                   | Description                          | Public |
+|---------|-----------------------|--------------------------------------|--------|
+| POST    | `/api/auth/register`  | Créer un compte (rôle USER) + token  | ✅     |
+| POST    | `/api/auth/login`     | Se connecter et récupérer un token   | ✅     |
+
+**Utilisation :**
+
+1. S'inscrire ou se connecter → récupérer le `token` renvoyé.
+2. Envoyer ce token dans l'en-tête de chaque requête protégée :
+   ```
+   Authorization: Bearer <token>
+   ```
+3. Dans **Swagger UI**, cliquer sur le bouton **Authorize** 🔒 et coller le token.
+
+Le token contient le nom d'utilisateur et le rôle, est signé (HMAC-SHA) avec la clé `jwt.secret`
+(externalisée via `JWT_SECRET` en production) et expire après `jwt.expiration` millisecondes.
+Les mots de passe sont stockés hachés avec **BCrypt**.
+
 ## Gestion des erreurs
 
 Les erreurs renvoient un corps normalisé `{ "code": <http>, "msg": "<message>" }` :
@@ -130,6 +156,7 @@ Les erreurs renvoient un corps normalisé `{ "code": <http>, "msg": "<message>" 
 | Matricule déjà existant       | 409 Conflict     |
 | Email déjà existant           | 409 Conflict     |
 | Étudiant introuvable          | 404 Not Found    |
+| Identifiants invalides        | 401 Unauthorized |
 
 Exemple :
 
@@ -148,7 +175,8 @@ La suite couvre les quatre niveaux :
 - **`EtudiantServiceTest`** — tests unitaires (Mockito) des règles de validation et d'unicité ;
 - **`EtudiantRepositoryTest`** — `@DataJpaTest` sur H2 (requêtes dérivées, tri) ;
 - **`EtudiantControllerTest`** — `@WebMvcTest` (mapping des codes HTTP et format d'erreur) ;
-- **`EtudiantApiIntegrationTest`** — bout en bout sur H2 (scénarios du sujet + `/v3/api-docs`).
+- **`EtudiantApiIntegrationTest`** — bout en bout sur H2 (scénarios du sujet + `/v3/api-docs`) ;
+- **`AuthIntegrationTest`** — flux JWT complet (inscription → token → accès protégé, 401 sur mauvais identifiants).
 
 ## Décisions de conception
 

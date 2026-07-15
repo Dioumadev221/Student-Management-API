@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * ainsi que la disponibilite de la documentation OpenAPI generee par springdoc.
  */
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false) // focalise sur le CRUD ; la securite est testee par AuthIntegrationTest
 @ActiveProfiles("test")
 @TestMethodOrder(org.junit.jupiter.api.MethodOrderer.OrderAnnotation.class)
 class EtudiantApiIntegrationTest {
